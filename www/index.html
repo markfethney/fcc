@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html> 
+<head> 
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>FreeCarClassifieds beta</title>
+<style>
+  	html, body, ul, li,p{ width: 100%; height: 100%; margin:0; padding:0;}
+ 	ul ,li{ list-style-type: none;}
+ 	</style>
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/thumbnail-gallery.css" rel="stylesheet">
+    
+ 	<style>
+ 	.thumbnail {overflow-y: hidden;max-height: 200px;}
+ 	h5 {
+ 		font-size: 16px;
+		line-height: 16px;
+		height: 48px;
+		overflow-y: hidden;
+		word-wrap: break-word;
+	}
+
+ 
+ </style>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+   
+</head> 
+ 
+<body >
+
+	
+   <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="">FreeCarClassifieds</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            	
+                    <ul class="nav navbar-nav">
+                        <li>Home</li>
+                    </ul>
+                
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+
+ <!-- Page Content -->
+    <div class="container">
+	
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header searchTerm"></h1>
+                <form method="get" action="" id="carSearch">
+                	<ul>
+				<li><input type="text" id="query" name="query" placeholder="Search...?" value=""/></li>
+     			        <li><input type="text" id="postcode" name="postcode" placeholder="Your Postcode" value=""/></li>
+     			        <li><input type="text" id="distance" name="distance" placeholder="Max distance" value=""/></li>
+     			        <li><input type="text" id="min-price" name="minPrice" placeholder="from £££" value=""/></li>
+     			        <li><input type="text" id="max-price" name="maxPrice" placeholder="to £££" value=""/></li>
+     			        <li><input type="submit" class='submit' value="Search"/></li>
+     			</ul>
+     		</form>
+     		<p id="searching" class="reset"></p>
+                <p>Showing <span class="numResults reset"></span> results</p>
+                
+            </div>
+            <ul class="list reset"></ul>
+         </div>  
+         <hr>
+
+        <!-- Footer -->
+        <footer>
+            <div class="row">
+                <div class="col-lg-12">
+                    <p>Copyright &copy; Free Car Classifieds .net 2015</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+    <!-- /.container -->
+    
+     <script src="js/list.js"></script>
+    <script type="text/javascript">
+   	var options = {
+  		valueNames: [ 'price','source' ]
+	};
+	var userList = new List('list', options);
+	$( document ).ready(function() {
+		$('input#postcode').val(localStorage.getItem("postcode"));
+        $("#carSearch").submit(function(e){
+        var reqData = $('form#carSearch').serializeArray();
+        $('.reset').empty();
+        localStorage.setItem("postcode", reqData[1]['value']);
+        var urls =['http://freecarclassifieds.net/mynewcar/pistonheadsfunction.php','http://freecarclassifieds.net/mynewcar/ebayfunction.php','http://freecarclassifieds.net/mynewcar/gumtreefunction.php'];
+        for (var n = 0; n < urls.length; n++){
+ 		var req = $.ajax({
+ 			type: 'GET', 
+ 			url: urls[n], 
+ 			data: {query: reqData[0]['value'], postcode: reqData[1]['value'], distance: reqData[2]['value'], minPrice: reqData[3]['value'], maxPrice: reqData[4]['value'] }
+ 			});
+ 		req.done(function( resp ){
+ 			//$('#searching').append('Showing results from '+urls[n]+', ');
+ 		 var json = JSON.parse(resp);
+ 		 var n= parseInt(json.totalItems);
+ 		 //alert("Data Loaded: "+json)
+ 		 var numResults = n + parseInt($('span.numResults'));
+ 		 $('span.numResults').append(numResults);
+ 		 
+ 		 for(var i=0; i<n; i++){
+ 		 	$('ul.list').append('<li class="col-md-3 col-sm-6 col-xs-12 thumb"><h5>'+json[i]['title']+'</h5><a class="thumbnail" target="_blank" href="'+json[i]['link']+'"><img class="img-responsive" id="e'+i+'" src="'+json[i]['imgurl']+'" alt=""/></a><p class="price">Price: '+json[i]['price']+'</p><p>Location: '+json[i]['location']['place']+'</p><p><a href="'+json[i]['link']+'" title="See this car" target="_blank" class="source">View Listing on '+json[i]['src']+'</a></p><hr /></li>');
+ 		 	//var image = "#e"+i;
+ 		 	//$(image).attr("src",json[i]['imgurl']);
+ 		 } 
+ 		 
+ 		 }); //end done
+		}//end for
+            e.preventDefault(); //Prevent Default action. 
+            //e.unbind();
+        }); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if(!(window.JSON && window.JSON.parse)){
+            (function() {
+          function g(a){var b=typeof a;if("object"==b)if(a){if(a instanceof Array)return"array";if(a instanceof Object)return b;var c=Object.prototype.toString.call(a);if("[object Window]"==c)return"object";if("[object Array]"==c||"number"==typeof a.length&&"undefined"!=typeof a.splice&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("splice"))return"array";if("[object Function]"==c||"undefined"!=typeof a.call&&"undefined"!=typeof a.propertyIsEnumerable&&!a.propertyIsEnumerable("call"))return"function"}else return"null";
+          else if("function"==b&&"undefined"==typeof a.call)return"object";return b};function h(a){a=""+a;if(/^\s*$/.test(a)?0:/^[\],:{}\s\u2028\u2029]*$/.test(a.replace(/\\["\\\/bfnrtu]/g,"@").replace(/"[^"\\\n\r\u2028\u2029\x00-\x08\x10-\x1f\x80-\x9f]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:[\s\u2028\u2029]*\[)+/g,"")))try{return eval("("+a+")")}catch(b){}throw Error("Invalid JSON string: "+a);}function i(a,b){var c=[];j(new k(b),a,c);return c.join("")}function k(a){this.a=a}
+          function j(a,b,c){switch(typeof b){case "string":l(b,c);break;case "number":c.push(isFinite(b)&&!isNaN(b)?b:"null");break;case "boolean":c.push(b);break;case "undefined":c.push("null");break;case "object":if(null==b){c.push("null");break}if("array"==g(b)){var f=b.length;c.push("[");for(var d="",e=0;e<f;e++)c.push(d),d=b[e],j(a,a.a?a.a.call(b,""+e,d):d,c),d=",";c.push("]");break}c.push("{");f="";for(e in b)Object.prototype.hasOwnProperty.call(b,e)&&(d=b[e],"function"!=typeof d&&(c.push(f),l(e,c),c.push(":"),
+            j(a,a.a?a.a.call(b,e,d):d,c),f=","));c.push("}");break;case "function":break;default:throw Error("Unknown type: "+typeof b);}}var m={'"':'\\"',"\\":"\\\\","/":"\\/","\u0008":"\\b","\u000c":"\\f","\n":"\\n","\r":"\\r","\t":"\\t","\x0B":"\\u000b"},n=/\uffff/.test("\uffff")?/[\\\"\x00-\x1f\x7f-\uffff]/g:/[\\\"\x00-\x1f\x7f-\xff]/g;
+          function l(a,b){b.push('"',a.replace(n,function(a){if(a in m)return m[a];var b=a.charCodeAt(0),d="\\u";16>b?d+="000":256>b?d+="00":4096>b&&(d+="0");return m[a]=d+b.toString(16)}),'"')};window.JSON||(window.JSON={});"function"!==typeof window.JSON.stringify&&(window.JSON.stringify=i);"function"!==typeof window.JSON.parse&&(window.JSON.parse=h);
+        })();
+        }
+
+
+	});
+    </script>
+</body>
+</html>
